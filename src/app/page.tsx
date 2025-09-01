@@ -160,6 +160,9 @@ export default function Home() {
               <p className="text-sm text-blue-500 font-medium">
                 💡 This website is best viewed on a tablet/PC in landscape mode for the optimal coloring experience
               </p>
+              <p className="text-sm text-green-600 font-medium mt-2">
+                ✏️ For the best drawing experience, especially for kids learning, try using a digital stylus instead of fingers!
+              </p>
 
             {/* Add to Desktop for Easy Access */}
             <div className="mt-4 pt-4 border-t border-purple-200">

@@ -25,7 +25,7 @@ const ColoringCanvas = forwardRef<CanvasRef, ColoringCanvasProps>(({
   selectedColor,
   selectedTool,
   brushSize,
-  selectedTemplate
+  selectedTemplate,
 }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
@@ -125,6 +125,21 @@ const ColoringCanvas = forwardRef<CanvasRef, ColoringCanvasProps>(({
     }
   }
 
+  const getTouchPos = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return { x: 0, y: 0 }
+
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    const touch = e.touches[0] || e.changedTouches[0]
+
+    return {
+      x: (touch.clientX - rect.left) * scaleX,
+      y: (touch.clientY - rect.top) * scaleY
+    }
+  }
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     setIsDrawing(true)
     const pos = getMousePos(e)
@@ -173,6 +188,28 @@ const ColoringCanvas = forwardRef<CanvasRef, ColoringCanvasProps>(({
     if (!isDrawing) return
     const pos = getMousePos(e)
     draw(pos.x, pos.y)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    setIsDrawing(true)
+    const pos = getTouchPos(e)
+    draw(pos.x, pos.y, true)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (!isDrawing) return
+    const pos = getTouchPos(e)
+    draw(pos.x, pos.y)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (isDrawing) {
+      setIsDrawing(false)
+      saveState()
+    }
   }
 
   const undo = () => {
@@ -236,7 +273,8 @@ const ColoringCanvas = forwardRef<CanvasRef, ColoringCanvasProps>(({
     redo,
     save,
     clear
-  }))
+  }));
+
   return (
     <div className="bg-white rounded-3xl shadow-2xl p-4 border-4 border-purple-300">
       <canvas
@@ -246,12 +284,14 @@ const ColoringCanvas = forwardRef<CanvasRef, ColoringCanvasProps>(({
         onMouseMove={handleMouseMove}
         onMouseUp={stopDrawing}
         onMouseLeave={stopDrawing}
-        style={{ maxHeight: '500px' }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ maxHeight: '500px', touchAction: 'none' }}
       />
     </div>
   )
 })
-
 ColoringCanvas.displayName = 'ColoringCanvas'
 
 export default ColoringCanvas
