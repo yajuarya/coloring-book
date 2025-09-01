@@ -151,7 +151,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, suggestions, or support:
 - Create an issue on GitHub
-- Contact: [Your contact information]
+- Contact: @yajuarya on Twitter / LinkedIn
 
 ## 📊 Changelog
 
