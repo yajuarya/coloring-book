@@ -1,103 +1,257 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import ColoringCanvas, { CanvasRef } from '@/components/ColoringCanvas';
+import ToolSelector from '@/components/ToolSelector';
+import ColorPalette from '@/components/ColorPalette';
+import ActionButtons from '@/components/ActionButtons';
+import TemplateSelector from '@/components/TemplateSelector';
+
+
+// Component to handle desktop shortcut instructions without hydration issues
+function DesktopInstructions() {
+  const [instructions, setInstructions] = useState('Loading instructions for your device...');
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const platform = navigator.platform.toLowerCase();
+    let instructionText = '';
+    
+    // Detect OS and Browser
+    const isWindows = platform.includes('win');
+    const isMac = platform.includes('mac');
+    const isLinux = platform.includes('linux');
+    const isAndroid = userAgent.includes('android');
+    const isIOS = /ipad|iphone|ipod/.test(userAgent);
+    
+    const isChrome = userAgent.includes('chrome') && !userAgent.includes('edg');
+    const isFirefox = userAgent.includes('firefox');
+    const isSafari = userAgent.includes('safari') && !userAgent.includes('chrome');
+    const isEdge = userAgent.includes('edg');
+    
+    if (isIOS && isSafari) {
+      instructionText = `
+        <strong>📱 iOS Safari:</strong><br>
+        1. Tap the Share button (square with arrow) at the bottom<br>
+        2. Scroll down and tap "Add to Home Screen"<br>
+        3. Tap "Add" to confirm<br>
+        4. The app icon will appear on your home screen!
+      `;
+    } else if (isAndroid && isChrome) {
+      instructionText = `
+        <strong>📱 Android Chrome:</strong><br>
+        1. Tap the three dots menu (⋮) in the top right<br>
+        2. Tap "Add to Home screen"<br>
+        3. Edit the name if desired, then tap "Add"<br>
+        4. Tap "Add" again to confirm<br>
+        5. The app icon will appear on your home screen!
+      `;
+    } else if (isWindows && isChrome) {
+      instructionText = `
+        <strong>💻 Windows Chrome:</strong><br>
+        1. Click the three dots menu (⋮) in the top right<br>
+        2. Go to "More tools" → "Create shortcut"<br>
+        3. Check "Open as window" for app-like experience<br>
+        4. Click "Create" - shortcut appears on desktop!<br><br>
+        <strong>Alternative:</strong> Drag the URL from address bar to desktop
+      `;
+    } else if (isWindows && isEdge) {
+      instructionText = `
+        <strong>💻 Windows Edge:</strong><br>
+        1. Click the three dots menu (...) in the top right<br>
+        2. Select "Apps" → "Install this site as an app"<br>
+        3. Click "Install" to add to Start Menu and desktop<br><br>
+        <strong>Alternative:</strong> Right-click on desktop → New → Shortcut → paste URL
+      `;
+    } else if (isWindows && isFirefox) {
+      instructionText = `
+        <strong>💻 Windows Firefox:</strong><br>
+        1. Drag the URL from the address bar to your desktop<br>
+        2. Or right-click on desktop → New → Shortcut<br>
+        3. Paste the website URL and click Next<br>
+        4. Name it "Coloring Book App" and click Finish
+      `;
+    } else if (isMac && isChrome) {
+      instructionText = `
+        <strong>🖥️ Mac Chrome:</strong><br>
+        1. Click the three dots menu (⋮) in the top right<br>
+        2. Go to "More tools" → "Create shortcut"<br>
+        3. Check "Open as window" for app-like experience<br>
+        4. Click "Create" - shortcut appears on desktop!<br><br>
+        <strong>Alternative:</strong> Drag URL from address bar to desktop
+      `;
+    } else if (isMac && isSafari) {
+      instructionText = `
+        <strong>🖥️ Mac Safari:</strong><br>
+        1. Drag the URL from the address bar to your desktop<br>
+        2. Or go to File → Add to Dock (for dock shortcut)<br>
+        3. The shortcut will open in Safari when clicked
+      `;
+    } else if (isLinux && isChrome) {
+      instructionText = `
+        <strong>🐧 Linux Chrome:</strong><br>
+        1. Click the three dots menu (⋮) in the top right<br>
+        2. Go to "More tools" → "Create shortcut"<br>
+        3. Check "Open as window" for app-like experience<br>
+        4. Click "Create" - shortcut appears on desktop!
+      `;
+    } else if (isLinux && isFirefox) {
+      instructionText = `
+        <strong>🐧 Linux Firefox:</strong><br>
+        1. Drag the URL from address bar to desktop<br>
+        2. Or create a .desktop file manually<br>
+        3. Right-click desktop → Create Document → Empty Document<br>
+        4. Name it "coloring-app.desktop" and add shortcut content
+      `;
+    } else {
+      instructionText = `
+        <strong>🌐 General Instructions:</strong><br>
+        1. <strong>Chrome/Edge:</strong> Menu → More tools → Create shortcut<br>
+        2. <strong>Firefox:</strong> Drag URL from address bar to desktop<br>
+        3. <strong>Safari:</strong> Drag URL to desktop or use Share → Add to Home Screen<br>
+        4. <strong>Mobile:</strong> Use browser menu → "Add to Home Screen"<br><br>
+        <em>Your system: ${navigator.platform} - ${navigator.userAgent.split(' ')[0]}</em>
+      `;
+    }
+    
+    setInstructions(instructionText);
+  }, []);
+
+  return (
+    <div 
+      className="text-sm text-gray-800" 
+      dangerouslySetInnerHTML={{ __html: instructions }}
+    />
+  );
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [selectedColor, setSelectedColor] = useState('#ff6b6b');
+  const [selectedTool, setSelectedTool] = useState('brush');
+  const [brushSize, setBrushSize] = useState(10);
+  const [showTemplates, setShowTemplates] = useState(true);
+  const [showDesktopInstructions, setShowDesktopInstructions] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const canvasRef = useRef<CanvasRef>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-yellow-100 p-4">
+
+      {/* Template Selection Modal */}
+      {showTemplates && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <h2 className="text-3xl font-bold text-center mb-6 text-purple-600">
+              🌟 My First e-Colouring Book 🌟
+            </h2>
+            <TemplateSelector 
+              onTemplateSelect={(template) => {
+                setSelectedTemplate(template);
+                setShowTemplates(false);
+              }}
+              onClose={() => setShowTemplates(false)}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            
+            {/* Footer inside modal */}
+            <div className="text-center mt-6 pt-4 border-t border-purple-200">
+              <p className="text-lg text-blue-600 font-medium mb-2">
+                Have fun coloring! 🌟 Share your masterpiece with family! 👨‍👩‍👧‍👦
+              </p>
+              <p className="text-sm text-blue-500 font-medium">
+                💡 This website is best viewed on a tablet/PC in landscape mode for the optimal coloring experience
+              </p>
+
+            {/* Add to Desktop for Easy Access */}
+            <div className="mt-4 pt-4 border-t border-purple-200">
+              <button 
+                className="w-full p-4 text-left hover:bg-purple-50 transition-colors duration-200 rounded-2xl border border-purple-200"
+                onClick={() => setShowDesktopInstructions(!showDesktopInstructions)}
+              >
+                <h4 className="text-lg font-bold text-center text-purple-600 flex items-center justify-center">
+                  📱 Add to Desktop for Easy Access! 📱
+                  <span className={`ml-2 transform transition-transform duration-200 ${showDesktopInstructions ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </h4>
+              </button>
+              {showDesktopInstructions && (
+                <div className="px-4 pb-4 mt-2">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-700 mb-3">
+                      Save this coloring app to your desktop for quick access anytime!
+                    </p>
+                    <div className="bg-blue-50 rounded-xl p-3 text-left">
+                      <DesktopInstructions />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+      )}
+
+      {/* Main App Layout */}
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Sidebar - Tools and Colors */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* Tool Selector */}
+            <div className="bg-white rounded-3xl p-4 shadow-lg border-4 border-purple-200">
+              <ToolSelector
+                selectedTool={selectedTool}
+                onToolChange={setSelectedTool}
+                brushSize={brushSize}
+                onBrushSizeChange={setBrushSize}
+              />
+            </div>
+
+            {/* Color Palette */}
+            <div className="bg-white rounded-3xl p-4 shadow-lg border-4 border-pink-200">
+              <ColorPalette
+                selectedColor={selectedColor}
+                onColorChange={setSelectedColor}
+              />
+            </div>
+
+          </div>
+
+          {/* Main Canvas Area */}
+          <div className="lg:col-span-3">
+            <div className="flex justify-center items-center mb-4">
+              <ActionButtons
+                onBack={() => setShowTemplates(true)}
+                onUndo={() => canvasRef.current?.undo()}
+                onRedo={() => canvasRef.current?.redo()}
+                onSave={() => canvasRef.current?.save()}
+                onClear={() => canvasRef.current?.clear()}
+              />
+            </div>
+            <div className="bg-white rounded-3xl p-4 shadow-lg border-4 border-blue-200">
+              <ColoringCanvas
+                ref={canvasRef}
+                selectedColor={selectedColor}
+                selectedTool={selectedTool}
+                brushSize={brushSize}
+                selectedTemplate={selectedTemplate}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      {/* Footer */}
+      <div className="text-center mt-8">
+        <p className="text-lg text-blue-600 font-medium mb-2 drop-shadow-lg">
+          Have fun coloring! 🌟 Share your masterpiece with family! 👨‍👩‍👧‍👦
+        </p>
+        <p className="text-sm text-blue-500 font-medium drop-shadow-lg">
+          💡 This website is best viewed on a tablet/PC in landscape mode for the optimal coloring experience
+        </p>
+      </div>
+
     </div>
   );
 }
